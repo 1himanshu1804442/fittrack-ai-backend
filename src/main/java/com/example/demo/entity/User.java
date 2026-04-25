@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "users") // Maps explicitly to your PostgreSQL "users" table
@@ -26,4 +27,9 @@ public class User {
 
     @Column(name = "body_weight", precision = 5, scale = 2)
     private BigDecimal bodyWeight;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "goal")
+    private Goal goal;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Workout> workouts;
 }
