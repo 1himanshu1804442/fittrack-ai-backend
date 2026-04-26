@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.UserUpdateDTO;
 import com.example.demo.entity.User;
 import com.example.demo.entity.Workout;
 import com.example.demo.repository.UserRepository;
@@ -34,5 +35,14 @@ public class UserService {
 
 
         return workoutRepository.save(workout);
+    }
+    public User updateUser(Integer id, UserUpdateDTO updateData) {
+        return userRepository.findById(id)
+                .map(user -> {
+                    user.setBodyWeight(updateData.getBodyWeight());
+                    user.setGoal(updateData.getGoal());
+                    return userRepository.save(user);
+                })
+                .orElse(null);
     }
 }
