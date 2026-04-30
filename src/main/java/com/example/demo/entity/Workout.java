@@ -1,38 +1,57 @@
 package com.example.demo.entity;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "workouts")
 public class Workout {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "workout_id")
-    private Long workoutId;
+    private Long id;
 
-    @Column(name = "description", nullable = false)
-    private String description;
+    @Column(columnDefinition = "TEXT")
+    private String aiResponse;
 
-    @Column(name = "duration_minutes")
-    private int durationMinutes;
+    private LocalDateTime createdAt;
 
-    @Column(name = "workout_date")
-    private LocalDate date;
-
-    // The Magic Link: Many workouts to One user
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private User user;
+
+    public Workout() {}
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getAiResponse() {
+        return aiResponse;
+    }
+
+    public void setAiResponse(String aiResponse) {
+        this.aiResponse = aiResponse;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
