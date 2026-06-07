@@ -1,4 +1,4 @@
-package com.example.demo.entity; // Update this line if your package name is different
+package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
