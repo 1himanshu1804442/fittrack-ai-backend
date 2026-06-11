@@ -24,6 +24,8 @@ public class User {
 
     @Column(name = "username", length = 50, nullable = false)
     private String username;
+    @Column(name = "password", nullable = false)
+    private String password;
 
     @Column(name = "body_weight", precision = 5, scale = 2)
     private BigDecimal bodyWeight;
