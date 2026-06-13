@@ -8,9 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.ArrayList; // Added this import
 
 @Entity
-@Table(name = "users") // Maps explicitly to your PostgreSQL "users" table
+@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,14 +25,22 @@ public class User {
 
     @Column(name = "username", length = 50, nullable = false)
     private String username;
+
     @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "body_weight", precision = 5, scale = 2)
     private BigDecimal bodyWeight;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "goal")
     private Goal goal;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Workout> workouts;
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ExerciseLog> exerciseLogs = new ArrayList<>();
+
 }

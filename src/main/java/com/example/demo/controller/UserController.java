@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.UserUpdateDTO;
 import com.example.demo.entity.User;
 import com.example.demo.entity.Workout;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.WorkoutRepository;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.service.RecommendationService;
@@ -27,6 +28,9 @@ public class UserController {
     private UserService userService;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private RecommendationService recommendationService;
 
     @Autowired
@@ -42,7 +46,9 @@ public class UserController {
     private PasswordEncoder passwordEncoder;
 
     public record AuthenticationRequest(String username, String password) {}
-    public record AuthenticationResponse(String jwt) {}
+
+    // Updated to send back the database ID to React
+    public record AuthenticationResponse(String jwt, Integer userId) {}
 
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody User user) {
@@ -64,7 +70,12 @@ public class UserController {
         final UserDetails userDetails = userService.loadUserByUsername(authRequest.username());
         final String jwt = jwtUtil.generateToken(userDetails.getUsername());
 
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+        // Grab the actual user from the database to get their integer ID
+        User user = userRepository.findByUsername(authRequest.username())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Return BOTH the token and the database ID to React
+        return ResponseEntity.ok(new AuthenticationResponse(jwt, user.getUserId()));
     }
 
     @GetMapping
