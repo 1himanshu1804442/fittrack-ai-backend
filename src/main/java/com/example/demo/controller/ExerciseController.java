@@ -39,7 +39,7 @@ public class ExerciseController {
 
     @GetMapping("/{userId}/exercises")
     public ResponseEntity<List<ExerciseLog>> getExerciseLogs(@PathVariable Integer userId) {
-        List<ExerciseLog> logs = exerciseLogRepository.findByUserUserId(userId);
+        List<ExerciseLog> logs = exerciseLogRepository.findByUserUserIdOrderByDateLoggedDesc(userId);
         return ResponseEntity.ok(logs);
     }
 }
