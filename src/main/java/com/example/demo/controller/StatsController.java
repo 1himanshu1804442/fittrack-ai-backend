@@ -17,4 +17,5 @@ public class StatsController {
     public ResponseEntity<UserStatsDTO> getUserStats(@PathVariable Integer userId) {
         return ResponseEntity.ok(statsService.getUserStats(userId));
     }
+
 }

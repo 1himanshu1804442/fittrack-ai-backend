@@ -36,6 +36,9 @@ public class User {
     @Column(name = "goal")
     private Goal goal;
 
+    @Column(name = "training_days_per_week")
+    private Integer trainingDaysPerWeek = 6;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Workout> workouts;
 

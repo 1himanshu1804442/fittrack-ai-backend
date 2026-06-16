@@ -54,10 +54,17 @@ public class UserService implements UserDetailsService {
     public User updateUser(Integer id, UserUpdateDTO updateData) {
         return userRepository.findById(id)
                 .map(user -> {
+                    // Update existing fields
                     user.setBodyWeight(updateData.getBodyWeight());
                     user.setGoal(updateData.getGoal());
+
+                    // Safely update the new training frequency field
+                    if (updateData.getTrainingDaysPerWeek() != null) {
+                        user.setTrainingDaysPerWeek(updateData.getTrainingDaysPerWeek());
+                    }
+
                     return userRepository.save(user);
                 })
-                .orElse(null);
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id)); // Adding a throw here is safer than returning null!
     }
 }

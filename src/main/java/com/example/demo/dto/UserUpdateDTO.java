@@ -1,16 +1,19 @@
 package com.example.demo.dto;
 
 import com.example.demo.entity.Goal;
-import java.math.BigDecimal; // Add this import
+import java.math.BigDecimal;
 
 public class UserUpdateDTO {
-    private BigDecimal bodyWeight; // Change Double to BigDecimal
+    private BigDecimal bodyWeight;
     private Goal goal;
+    private Integer trainingDaysPerWeek;
 
-    // Update Getters and Setters to use BigDecimal
     public BigDecimal getBodyWeight() { return bodyWeight; }
     public void setBodyWeight(BigDecimal bodyWeight) { this.bodyWeight = bodyWeight; }
 
     public Goal getGoal() { return goal; }
     public void setGoal(Goal goal) { this.goal = goal; }
+
+    public Integer getTrainingDaysPerWeek() { return trainingDaysPerWeek; }
+    public void setTrainingDaysPerWeek(Integer trainingDaysPerWeek) { this.trainingDaysPerWeek = trainingDaysPerWeek; }
 }
