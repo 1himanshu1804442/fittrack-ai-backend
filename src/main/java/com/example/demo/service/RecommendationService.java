@@ -98,11 +98,11 @@ public class RecommendationService {
         requestBody.put("contents", List.of(part));
 
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);
 
         Map<String, String> result = new HashMap<>();
 
         try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);
             Map<String, Object> responseBody = response.getBody();
             List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseBody.get("candidates");
             Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
@@ -119,7 +119,7 @@ public class RecommendationService {
             result.put("recommendation", textResponse);
         } catch (Exception e) {
             e.printStackTrace();
-            result.put("recommendation", "Failed to generate recommendation. Please check backend logs.");
+            result.put("recommendation", "Failed to connect to the AI Coach. Please verify that your GEMINI_API_KEY is correct and active.");
         }
 
         return result;

@@ -1,6 +1,6 @@
 # 🏋️‍♂️ FitTrack AI Backend
 
-A scalable, RESTful backend API designed to power a smart fitness tracking application. It provides user management and will feature AI-driven workout recommendations based on specific body metrics and fitness goals.
+A scalable, RESTful backend API designed to power a smart fitness tracking application. It provides user management, exercise logging, and features AI-driven workout recommendations based on specific body metrics and fitness goals.
 
 ## 🚀 Tech Stack
 * **Language:** Java 17
@@ -8,14 +8,15 @@ A scalable, RESTful backend API designed to power a smart fitness tracking appli
 * **Database:** PostgreSQL
 * **ORM:** Spring Data JPA / Hibernate
 
-## ✨ Current Features (Phase 1)
+## ✨ Current Features
 * **Three-Tier Architecture:** Clean separation of Controller, Service, and Repository layers.
-* **User Management:** REST API endpoints for creating and retrieving users via JSON payload.
-* **Goal Tracking:** Integration of programmatic `Enum` goals (WEIGHT_LOSS, MUSCLE_GAIN, MAINTENANCE) to drive future AI logic.
-* **Secure Configurations:** Environment variable implementation for database credentials following the Twelve-Factor App methodology.
+* **Authentication:** Secure JWT-based authentication for multiple users.
+* **Workout Logging:** Full CRUD capabilities for exercise logs with paginated endpoints.
+* **Analytics:** Generates Volume Progression and 1-Rep Max (1RM) progression data utilizing the Brzycki formula.
+* **AI Coach:** Integration with Google Gemini AI to generate customized workout plans.
 
 ## 🛠️ Local Setup
 1. Clone the repository.
 2. Create a local PostgreSQL database.
-3. Set your environment variable `DB_PASSWORD` in your IDE run configurations.
+3. Set your environment variables `DB_PASSWORD` and `GEMINI_API_KEY` in your IDE run configurations.
 4. Run the Spring Boot application on port `8080`.
