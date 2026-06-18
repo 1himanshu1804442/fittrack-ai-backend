@@ -17,8 +17,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Comparator;
 import com.example.demo.dto.OneRepMaxDataDTO;
+import com.example.demo.dto.ExerciseDistributionDTO;
+import com.example.demo.dto.QuickLogDataDTO;
 import java.util.Map;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.ArrayList;
 
 @Service
 public class StatsService {
@@ -121,6 +125,38 @@ public class StatsService {
         return max1RMPerDay.entrySet().stream()
                 .map(entry -> new OneRepMaxDataDTO(entry.getKey().toString(), Math.round(entry.getValue() * 100.0) / 100.0))
                 .sorted(Comparator.comparing(OneRepMaxDataDTO::getDate))
+                .collect(Collectors.toList());
+    }
+
+    public List<QuickLogDataDTO> getRecentExercisesWithWeights(Integer userId) {
+        List<ExerciseLog> logs = exerciseLogRepository.findAllByUserUserIdOrderByDateLoggedDesc(userId);
+        
+        Map<String, Double> latestWeights = new LinkedHashMap<>();
+        for (ExerciseLog log : logs) {
+            if (!latestWeights.containsKey(log.getExerciseName()) && log.getWeight() != null) {
+                latestWeights.put(log.getExerciseName(), log.getWeight());
+            }
+        }
+        
+        return latestWeights.entrySet().stream()
+                .limit(5)
+                .map(entry -> new QuickLogDataDTO(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<ExerciseDistributionDTO> getExerciseDistribution(Integer userId) {
+        List<ExerciseLog> logs = exerciseLogRepository.findAllByUserUserIdOrderByDateLoggedDesc(userId);
+        
+        Map<String, Integer> setsPerExercise = logs.stream()
+                .collect(Collectors.groupingBy(
+                        ExerciseLog::getExerciseName,
+                        Collectors.summingInt(log -> log.getSets() != null ? log.getSets() : 0)
+                ));
+                
+        return setsPerExercise.entrySet().stream()
+                .map(entry -> new ExerciseDistributionDTO(entry.getKey(), entry.getValue()))
+                .sorted((e1, e2) -> e2.getTotalSets().compareTo(e1.getTotalSets()))
+                .limit(10)
                 .collect(Collectors.toList());
     }
 }

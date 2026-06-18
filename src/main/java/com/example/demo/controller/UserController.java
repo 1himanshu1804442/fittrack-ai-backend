@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.CustomWorkoutRequestDTO;
 import com.example.demo.dto.UserUpdateDTO;
 import com.example.demo.entity.User;
 import com.example.demo.entity.Workout;
@@ -83,6 +84,13 @@ public class UserController {
         return userService.findAll();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+        return userRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/{userId}/workouts")
     public Workout createWorkoutForUser(@PathVariable Integer userId, @RequestBody Workout workout) {
         return userService.addWorkoutToUser(userId, workout);
@@ -91,6 +99,11 @@ public class UserController {
     @GetMapping("/{userId}/recommendation")
     public Map<String, String> getUserRecommendation(@PathVariable Integer userId) {
         return recommendationService.generatePlan(userId);
+    }
+
+    @PostMapping("/{userId}/custom-workout")
+    public Map<String, String> getCustomUserRecommendation(@PathVariable Integer userId, @RequestBody CustomWorkoutRequestDTO request) {
+        return recommendationService.generateCustomPlan(userId, request);
     }
 
     @PutMapping("/{id}")

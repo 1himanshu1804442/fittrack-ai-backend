@@ -63,6 +63,11 @@ public class UserService implements UserDetailsService {
                         user.setTrainingDaysPerWeek(updateData.getTrainingDaysPerWeek());
                     }
 
+                    if (updateData.getCalorieGoal() != null) user.setCalorieGoal(updateData.getCalorieGoal());
+                    if (updateData.getProteinGoal() != null) user.setProteinGoal(updateData.getProteinGoal());
+                    if (updateData.getCarbsGoal() != null) user.setCarbsGoal(updateData.getCarbsGoal());
+                    if (updateData.getFatGoal() != null) user.setFatGoal(updateData.getFatGoal());
+
                     return userRepository.save(user);
                 })
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id)); // Adding a throw here is safer than returning null!

@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ExerciseLogRequest;
 import com.example.demo.dto.OneRepMaxDataDTO;
+import com.example.demo.dto.ExerciseDistributionDTO;
+import com.example.demo.dto.QuickLogDataDTO;
 import com.example.demo.entity.ExerciseLog;
 import com.example.demo.entity.User;
 import com.example.demo.repository.ExerciseLogRepository;
@@ -102,5 +104,17 @@ public class ExerciseController {
             @RequestParam String exerciseName) {
         List<OneRepMaxDataDTO> analytics = statsService.getOneRepMaxAnalytics(userId, exerciseName);
         return ResponseEntity.ok(analytics);
+    }
+
+    @GetMapping("/{userId}/exercises/quick-log-data")
+    public ResponseEntity<List<QuickLogDataDTO>> getQuickLogData(@PathVariable Integer userId) {
+        List<QuickLogDataDTO> quickLogData = statsService.getRecentExercisesWithWeights(userId);
+        return ResponseEntity.ok(quickLogData);
+    }
+
+    @GetMapping("/{userId}/exercises/distribution")
+    public ResponseEntity<List<ExerciseDistributionDTO>> getExerciseDistribution(@PathVariable Integer userId) {
+        List<ExerciseDistributionDTO> distribution = statsService.getExerciseDistribution(userId);
+        return ResponseEntity.ok(distribution);
     }
 }

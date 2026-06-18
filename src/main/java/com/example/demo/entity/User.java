@@ -46,4 +46,16 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExerciseLog> exerciseLogs = new ArrayList<>();
 
+    @Column(name = "calorie_goal")
+    private Integer calorieGoal = 2500;
+
+    @Column(name = "protein_goal")
+    private Integer proteinGoal = 180;
+
+    @Column(name = "carbs_goal")
+    private Integer carbsGoal = 250;
+
+    @Column(name = "fat_goal")
+    private Integer fatGoal = 75;
+
 }
