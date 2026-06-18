@@ -336,22 +336,22 @@ public class RecommendationService {
             Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
             List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
             String textResponse = (String) parts.get(0).get("text");
+            textResponse = textResponse.trim();
 
             // Strip markdown block if Gemini accidentally includes it
             if (textResponse.startsWith("```json")) {
                 textResponse = textResponse.substring(7);
-                if (textResponse.endsWith("```")) {
-                    textResponse = textResponse.substring(0, textResponse.length() - 3);
-                }
             } else if (textResponse.startsWith("```")) {
                 textResponse = textResponse.substring(3);
-                if (textResponse.endsWith("```")) {
-                    textResponse = textResponse.substring(0, textResponse.length() - 3);
-                }
             }
+            if (textResponse.endsWith("```")) {
+                textResponse = textResponse.substring(0, textResponse.length() - 3);
+            }
+            
+            textResponse = textResponse.trim();
 
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, String> parsedSections = mapper.readValue(textResponse.trim(), Map.class);
+            Map<String, String> parsedSections = mapper.readValue(textResponse, Map.class);
             result.put("sections", parsedSections);
 
         } catch (Exception e) {
