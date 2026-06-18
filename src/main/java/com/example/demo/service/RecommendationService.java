@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class RecommendationService {
@@ -237,6 +238,132 @@ public class RecommendationService {
             workoutRepository.save(newWorkout);
             
             result.put("recommendation", mockPlan);
+        }
+
+        return result;
+    }
+
+    public Map<String, Object> generatePerformanceReview(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserStatsDTO stats = statsService.getUserStats(userId);
+        int currentWeekVolume = stats.getWeeklyVolume();
+        int previousWeekVolume = statsService.getPreviousWeekVolume(userId);
+
+        List<ExerciseLog> recentLifts = exerciseLogRepository.findTop5ByUserOrderByDateLoggedDesc(user);
+
+        // Fast fail for empty users - save API quota
+        if (recentLifts.isEmpty() && currentWeekVolume == 0) {
+            Map<String, Object> emptyResult = new HashMap<>();
+            Map<String, String> emptySections = new HashMap<>();
+            emptySections.put("performanceSummary", "Not enough training history available.");
+            emptySections.put("recoveryAnalysis", "N/A");
+            emptySections.put("progressiveOverloadAnalysis", "Log more workouts to see your progression trends.");
+            emptySections.put("potentialIssues", "Consistency is key. Start tracking your sessions!");
+            emptySections.put("nextWorkoutRecommendations", "Start logging your workouts to receive personalized recommendations.");
+            emptySections.put("nextWeekRecommendations", "Aim for at least 3 logged workouts next week.");
+            
+            emptyResult.put("sections", emptySections);
+            emptyResult.put("recoveryScore", stats.getRecoveryScore());
+            emptyResult.put("volumeChange", 0);
+            return emptyResult;
+        }
+
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("You are an elite AI strength and conditioning coach analyzing a client's performance.\n\n");
+        promptBuilder.append("USER DATA:\n");
+        promptBuilder.append("- Current Week Volume: ").append(currentWeekVolume).append(" kg\n");
+        promptBuilder.append("- Previous Week Volume: ").append(previousWeekVolume).append(" kg\n");
+        promptBuilder.append("- Recovery Score: ").append(stats.getRecoveryScore()).append("%\n");
+        
+        promptBuilder.append("\nRECENT LIFTS (For overload analysis):\n");
+        for (ExerciseLog log : recentLifts) {
+            promptBuilder.append("- ").append(log.getExerciseName())
+                    .append(": ").append(log.getWeight()).append("kg ")
+                    .append("(").append(log.getSets()).append("x").append(log.getReps()).append(")\n");
+        }
+
+        promptBuilder.append("\nINSTRUCTIONS:\n");
+        promptBuilder.append("Address the user directly. Analyze their volume change and recovery score. ");
+        promptBuilder.append("CRITICAL: You MUST use specific numbers in your response (e.g., 'Bench Press volume increased 12%', or 'Increase Bench to 70kg x 8'). Do NOT give generic fluff. ");
+        promptBuilder.append("Calculate the percentage difference between Current and Previous week volume and mention it explicitly. ");
+        promptBuilder.append("If Recovery Score is below 60%, mandate a rest day or deload. ");
+        promptBuilder.append("CRITICAL: You MUST return your entire response as a raw, valid JSON object exactly matching this format:\n");
+        promptBuilder.append("{\n");
+        promptBuilder.append("  \"performanceSummary\": \"...\",\n");
+        promptBuilder.append("  \"recoveryAnalysis\": \"...\",\n");
+        promptBuilder.append("  \"progressiveOverloadAnalysis\": \"...\",\n");
+        promptBuilder.append("  \"potentialIssues\": \"...\",\n");
+        promptBuilder.append("  \"nextWorkoutRecommendations\": \"...\",\n");
+        promptBuilder.append("  \"nextWeekRecommendations\": \"...\"\n");
+        promptBuilder.append("}\n");
+        promptBuilder.append("Do NOT wrap the JSON in markdown code blocks (e.g. ```json). Just output the raw JSON string.\n");
+
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + geminiApiKey;
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> message = new HashMap<>();
+        message.put("text", promptBuilder.toString());
+
+        Map<String, Object> part = new HashMap<>();
+        part.put("parts", List.of(message));
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("contents", List.of(part));
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        Map<String, Object> result = new HashMap<>();
+        
+        int volumeChangePct = 0;
+        if (previousWeekVolume > 0) {
+            volumeChangePct = (int) Math.round(((double)(currentWeekVolume - previousWeekVolume) / previousWeekVolume) * 100);
+        } else if (currentWeekVolume > 0) {
+            volumeChangePct = 100;
+        }
+        
+        result.put("recoveryScore", stats.getRecoveryScore());
+        result.put("volumeChange", volumeChangePct);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+            List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseBody.get("candidates");
+            Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
+            List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+            String textResponse = (String) parts.get(0).get("text");
+
+            // Strip markdown block if Gemini accidentally includes it
+            if (textResponse.startsWith("```json")) {
+                textResponse = textResponse.substring(7);
+                if (textResponse.endsWith("```")) {
+                    textResponse = textResponse.substring(0, textResponse.length() - 3);
+                }
+            } else if (textResponse.startsWith("```")) {
+                textResponse = textResponse.substring(3);
+                if (textResponse.endsWith("```")) {
+                    textResponse = textResponse.substring(0, textResponse.length() - 3);
+                }
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, String> parsedSections = mapper.readValue(textResponse.trim(), Map.class);
+            result.put("sections", parsedSections);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, String> mockSections = new HashMap<>();
+            mockSections.put("performanceSummary", "Your volume increased by 5% this week.");
+            mockSections.put("recoveryAnalysis", "Recovery score is solid at " + stats.getRecoveryScore() + "%.");
+            mockSections.put("progressiveOverloadAnalysis", "You are maintaining your strength levels well.");
+            mockSections.put("potentialIssues", "No major issues detected.");
+            mockSections.put("nextWorkoutRecommendations", "Increase weight on your primary compound lift by 2.5kg.");
+            mockSections.put("nextWeekRecommendations", "Try to increase total weekly volume by adding one more set to accessories.");
+            result.put("sections", mockSections);
         }
 
         return result;

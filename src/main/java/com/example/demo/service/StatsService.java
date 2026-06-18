@@ -83,6 +83,13 @@ public class StatsService {
         return Math.max(score, 10);
     }
 
+    public int getPreviousWeekVolume(Integer userId) {
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(7);
+        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusDays(14);
+        Double volume = exerciseLogRepository.calculateTotalVolumeBetween(userId, twoWeeksAgo, oneWeekAgo);
+        return volume != null ? volume.intValue() : 0;
+    }
+
     public List<VolumeChartDataDTO> getVolumeChartData(Integer userId) {
 
         List<ExerciseLog> logs = exerciseLogRepository.findAllByUserUserIdOrderByDateLoggedDesc(userId);

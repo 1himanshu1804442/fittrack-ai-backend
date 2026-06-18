@@ -31,4 +31,7 @@ public interface ExerciseLogRepository extends JpaRepository<ExerciseLog, Long> 
 
     @Query("SELECT COALESCE(SUM(e.weight * e.sets * e.reps), 0) FROM ExerciseLog e WHERE e.user.userId = :userId AND e.dateLogged >= :since")
     Double calculateTotalVolumeSince(@Param("userId") Integer userId, @Param("since") LocalDateTime since);
+
+    @Query("SELECT COALESCE(SUM(e.weight * e.sets * e.reps), 0) FROM ExerciseLog e WHERE e.user.userId = :userId AND e.dateLogged >= :startDate AND e.dateLogged < :endDate")
+    Double calculateTotalVolumeBetween(@Param("userId") Integer userId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

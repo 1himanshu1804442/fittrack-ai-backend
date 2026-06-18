@@ -106,6 +106,11 @@ public class UserController {
         return recommendationService.generateCustomPlan(userId, request);
     }
 
+    @GetMapping("/{userId}/coach")
+    public Map<String, Object> getPerformanceCoachReview(@PathVariable Integer userId) {
+        return recommendationService.generatePerformanceReview(userId);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody UserUpdateDTO updateData) {
         User updatedUser = userService.updateUser(id, updateData);
